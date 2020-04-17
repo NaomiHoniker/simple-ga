@@ -44,7 +44,16 @@
     "
     [parents params]
     ;; Your code goes here
-    nil)
+    (let [population (:population-size params)]
+      (let [probability (:crossover-rate params)]
+        (if (> (population) (1))
+          (
+           ;; If more than one parent...
+            ()
+           ;; If only one parent...
+           ()
+            ))))
+    )
               
 
 (defn generate-individual
@@ -71,12 +80,12 @@
 
 (defn select-parents
     "Select and return the num-parents most fit individuals in the population.
-    
+
     This is known truncation selection.
     "
     [population num-parents]
-    ;; Your code goes here
-    nil)
+    (take num-parents (sort-by :fitness > population ) )
+  )
     
 (defn evaluate-individual
     "Evaluate a given individual on the specified fitness function.
@@ -97,7 +106,8 @@
     "
     [population fitness-function]
     ;; Your code goes here
-    nil)
+    (vector pmap (fn [individual] (evaluate-individual individual fitness-function)) population )
+    )
     
 
 (defn run-generation
@@ -110,7 +120,11 @@
     "
     [population params]
     ;; Your code goes here
-    nil)
+    (let [runGenStep1 (evaluate-population population (:fitness-function params))] ;; Evaluate Population, pass in FF
+      (let [runGenStep2 (select-parents runGenStep1 (:num-parents params))] ;; Select parents, pass in num parents
+        (reproduce runGenStep2 params) ;; Reproduce parents
+        ))
+    )
          
 (defn evolve
     "Run a genetic algorithm with the given params and return the best individual in the final generation."
