@@ -12,8 +12,15 @@
 (defn mutate-genome
     "Produce a mutated genome by flipping each bit with mutation-rate probability."
     [genome mutation-rate]
-    ;; Your code goes here
-    nil)
+    (map (fn [bit]
+           (if (simple-ga.utils/coin-toss? mutation-rate)
+             ;; True
+             (simple-ga.utils/flip-bit bit)
+             ;; False
+             bit
+             ))
+         genome)
+    )
          
 (defn crossover
     "Perform single-point crossover on the two genomes.
@@ -24,8 +31,28 @@
     See: https://en.wikipedia.org/wiki/Crossover_(genetic_algorithm)#Single-point_crossover
     "
     [genome1 genome2]
-    ;; Your code goes here
-    nil)
+    (let [crossover-point (rand-int (count genome1))]
+      (let [genome-part-1 (if (simple-ga.utils/coin-toss?)
+                            ;; Heads - genome1
+                            genome1
+                            ;; Tails - genome2
+                            genome2
+                            )]
+        (let [genome-part-2 (if (= genome-part-1 genome1)
+                              ;; genome head is from 1, tail will be from 2
+                              genome2
+                              ;; genome head is from 2, tail will be from 1
+                              genome1
+                              )]
+          (let [genome-head (subvec genome-part-1 0 crossover-point)]
+            (let [genome-tail (subvec genome-part-2 crossover-point)]
+              (concat genome-head genome-tail)
+              )
+            )
+          )
+        )
+      )
+  )
           
 (defn reproduce
     "Create the next generation from the given parents using the relevant params.
@@ -46,12 +73,21 @@
     ;; Your code goes here
     (let [population (:population-size params)]
       (let [probability (:crossover-rate params)]
-        (if (> (population) (1))
-          (
-           ;; If more than one parent...
-            ()
-           ;; If only one parent...
-           ()
+        (let [rate (:mutation-rate params)]
+          (let [new-generation (concat nil parents)]
+            (while (< (count new-generation) population)
+              ;; While new-generation's count is less than population...
+              (if (simple-ga.utils/coin-toss? probability )
+                (
+                 ;; If true...
+                 (let [crossover-genome (apply crossover (vector (take 2 (shuffle (parents)))) )]
+                   (concat new-generation (mutate-genome crossover-genome rate)))
+                 ;; If false...
+                 (let [single-genome (first (shuffle (parents))) ]
+                   (concat new-generation (mutate-genome single-genome rate)))
+                 )
+                )
+              )
             ))))
     )
               
@@ -75,7 +111,20 @@
     "
     [params]
     ;; Your code goes here
-    nil)
+    (let [size (:population-size params)]
+      (let [length (:genome-size params)]
+        (let [population (list)]
+          (let [counter 0]
+            (while (< counter size)
+              ;; While population's count is less than expected size...
+              (conj population (generate-individual length))
+              (inc counter)
+              )
+            )
+          )
+        )
+      )
+    )
           
 
 (defn select-parents
