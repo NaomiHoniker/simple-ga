@@ -31,7 +31,7 @@
     See: https://en.wikipedia.org/wiki/Crossover_(genetic_algorithm)#Single-point_crossover
     "
     [genome1 genome2]
-    (let [crossover-point (rand-int (count genome1))]
+    (let [crossover-point (rand-int (+ (count genome1) 1))]
       (let [genome-part-1 (if (simple-ga.utils/coin-toss?)
                             ;; Heads - genome1
                             genome1
@@ -44,9 +44,9 @@
                               ;; genome head is from 2, tail will be from 1
                               genome1
                               )]
-          (let [genome-head (subvec genome-part-1 0 crossover-point)]
-            (let [genome-tail (subvec genome-part-2 crossover-point)]
-              (concat genome-head genome-tail)
+          (let [genome-head (subvec genome-part-1 0 crossover-point)] ;; Head is 0 - crossover point (exclusive)
+            (let [genome-tail (subvec genome-part-2 crossover-point)] ;; Tail is crossover - end of opposite
+              (concat genome-head genome-tail)              ;; Combines the head and tail of the genome
               )
             )
           )
@@ -74,18 +74,16 @@
     (let [population (:population-size params)]
       (let [probability (:crossover-rate params)]
         (let [rate (:mutation-rate params)]
-          (let [new-generation (concat nil parents)]
-            (while (< (count new-generation) population)
-              ;; While new-generation's count is less than population...
+          (loop [new-generation (map :genome parents)] ;; loop
+            (when (> population (count new-generation))   ;; When the count of new-gen is less than the max pop.
               (if (simple-ga.utils/coin-toss? probability )
-                (
-                 ;; If true...
-                 (let [crossover-genome (apply crossover (vector (take 2 (shuffle (parents)))) )]
-                   (concat new-generation (mutate-genome crossover-genome rate)))
-                 ;; If false...
-                 (let [single-genome (first (shuffle (parents))) ]
-                   (concat new-generation (mutate-genome single-genome rate)))
-                 )
+                ;; If true...
+                (let [crossover-genome (crossover (:genome (rand-nth parents)) (:genome (rand-nth parents)) )]
+                  ;; (apply crossover (take 2 (shuffle parents)) )
+                  (recur (concat new-generation (mutate-genome crossover-genome rate))))
+                ;; If false...
+                (let [single-genome (:genome (rand-nth parents)) ]
+                  (recur (concat new-generation (mutate-genome single-genome rate))))
                 )
               )
             ))))
@@ -163,7 +161,8 @@
     (let [runGenStep1 (evaluate-population population (:fitness-function params))] ;; Evaluate Population, pass in FF
       (let [runGenStep2 (select-parents runGenStep1 (:num-parents params))] ;; Select parents, pass in num parents
         (reproduce runGenStep2 params) ;; Reproduce parents
-        ))
+        )
+      )
     )
          
 (defn evolve
