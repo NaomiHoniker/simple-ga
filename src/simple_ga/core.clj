@@ -110,20 +110,11 @@
     (:genome-size params) length vector of bits (0s and 1s)
     "
     [params]
-    ;; Your code goes here
     (let [size (:population-size params)]
       (let [length (:genome-size params)]
-        (let [population (list)]
-          (let [counter 0]
-            (while (< counter size)
-              ;; While population's count is less than expected size...
-              (conj population (generate-individual length))
-              (inc counter)
-              )
-            )
-          )
-        )
-      )
+        (map (fn [len] (generate-individual len)) (repeat size length)) ;; Maps the gen-ind function to
+        )                                                               ;; a dummy list, (size) length,
+      )                                                                 ;; repeating the genome length
     )
           
 
