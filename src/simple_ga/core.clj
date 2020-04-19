@@ -77,21 +77,20 @@
         (let [rate (:mutation-rate params)]
           (let [parent-pool (map (fn [parent] (:genome parent)) parents)]
             (loop [the-parents parents]                 ;; Loop, using the parents sequence.
-              (if (<= population (count the-parents))       ;; If the parents count gets to or higher than population
+              (if (= population (count the-parents))       ;; If the parents count gets to or higher than population
                 ;; True, return the-parents
-                (concat nil the-parents)
+                the-parents
                 ;; False, add another individual to the
                 (if (simple-ga.utils/coin-toss? probability) ;; Flip a coin.
                   ;; Heads, cross over two random individuals from the parent pool, then create a map of the new genome
                   (let [crossover-genome (crossover (rand-nth parent-pool) (rand-nth parent-pool))]
-                    (recur (concat the-parents (vector (assoc nil :genome (mutate-genome crossover-genome rate))))
-                           ))
+                    (recur (conj the-parents { :genome (mutate-genome crossover-genome rate)}))
+                           )
                   ;; Tails, mutate a random genome from the parent pool. Create and add a map of the new genome.
                   (let [single-genome (rand-nth parent-pool)]
-                    (recur (concat the-parents (vector (assoc nil :genome (mutate-genome single-genome rate))))
-                           ))
-                  )
-                )
+                    (recur (conj the-parents {:genome (mutate-genome single-genome rate)})))
+                  ))
+              
               )
             )
           )
@@ -154,26 +153,26 @@
     "
     [population fitness-function]
     ;; Your code goes here
-    (vector pmap (fn [individual] (evaluate-individual individual fitness-function)) population )
+    (pmap (fn [individual] (evaluate-individual individual fitness-function)) population )
     )
     
 
-(defn run-generation
-    "Run a single generation of a genetic algorithm.
-    
-    Performs the following steps:
-        (1) evaluates the current population
-        (2) selects parents
-        (3) builds and returns the next generation by reproducing the parents.
-    "
-    [population params]
-    ;; Your code goes here
-    (let [runGenStep1 (evaluate-population population (:fitness-function params))] ;; Evaluate Population, pass in FF
-      (let [runGenStep2 (select-parents runGenStep1 params)] ;; Select parents, pass in num parents
-        (reproduce runGenStep2 params) ;; Reproduce parents
-        )
-      )
-    )
+              (defn run-generation
+                  "Run a single generation of a genetic algorithm.
+                  
+                  Performs the following steps:
+                      (1) evaluates the current population
+                      (2) selects parents
+                      (3) builds and returns the next generation by reproducing the parents.
+                  "
+                  [population params]
+                  ;; Your code goes here
+                  (let [runGenStep1 (evaluate-population population (:fitness-function params))] ;; Evaluate Population, pass in FF
+                    (let [runGenStep2 (select-parents runGenStep1 (:num-parents params))] ;; Select parents, pass in num parents
+                      (reproduce runGenStep2 params) ;; Reproduce parents
+                      )
+                    )
+                  )
          
 (defn evolve
     "Run a genetic algorithm with the given params and return the best individual in the final generation."
