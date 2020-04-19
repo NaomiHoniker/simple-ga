@@ -77,7 +77,10 @@
         (let [rate (:mutation-rate params)]
           (let [parent-pool (map (fn [parent] (:genome parent)) parents)]
             (loop [the-parents parents]                 ;; Loop, using the parents sequence.
-              (when (> population (count the-parents))       (println parents) ;; While expected pop > actual...
+              (if (<= population (count the-parents))       ;; If the parents count gets to or higher than population
+                ;; True, return the-parents
+                (concat nil the-parents)
+                ;; False, add another individual to the
                 (if (simple-ga.utils/coin-toss? probability) ;; Flip a coin.
                   ;; Heads, cross over two random individuals from the parent pool, then create a map of the new genome
                   (let [crossover-genome (crossover (rand-nth parent-pool) (rand-nth parent-pool))]
