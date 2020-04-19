@@ -98,19 +98,6 @@
         )
       )
     )
-
-  ;; Here's code that creates a sequence of *just* the genomes themselves
-  ;;(loop [new-generation (map (fn [parent] (:genome parent)) parents)] ;; loop
-  ;            (when (> population (count new-generation))  (println parents) ;; When the count of new-gen is less than the max pop.
-  ;              (if (simple-ga.utils/coin-toss? probability )
-  ;                ;; If true...
-  ;                (let [crossover-genome (crossover (:genome (rand-nth parents)) (:genome (rand-nth parents)) )]
-  ;                  (recur (concat new-generation (vector (mutate-genome crossover-genome rate)) )))
-  ;                ;; If false...
-  ;                (let [single-genome (:genome (rand-nth parents)) ]
-  ;                  (recur (concat new-generation (vector (mutate-genome single-genome rate)) )))
-  ;                ))
-  ;            )
               
 
 (defn generate-individual
@@ -182,7 +169,7 @@
     [population params]
     ;; Your code goes here
     (let [runGenStep1 (evaluate-population population (:fitness-function params))] ;; Evaluate Population, pass in FF
-      (let [runGenStep2 (select-parents runGenStep1 (:num-parents params))] ;; Select parents, pass in num parents
+      (let [runGenStep2 (select-parents runGenStep1 params)] ;; Select parents, pass in num parents
         (reproduce runGenStep2 params) ;; Reproduce parents
         )
       )
