@@ -12,7 +12,7 @@
 (defn mutate-genome
     "Produce a mutated genome by flipping each bit with mutation-rate probability."
     [genome mutation-rate]
-    (map (fn [bit]
+    (mapv (fn [bit]
            (if (simple-ga.utils/coin-toss? mutation-rate)
              ;; True
              (simple-ga.utils/flip-bit bit)
@@ -74,16 +74,16 @@
     (let [population (:population-size params)]
       (let [probability (:crossover-rate params)]
         (let [rate (:mutation-rate params)]
-          (loop [new-generation (map :genome parents)] ;; loop
-            (when (> population (count new-generation))   ;; When the count of new-gen is less than the max pop.
+          (loop [new-generation (map (fn [parent] (:genome parent)) parents)] ;; loop
+            (when (> population (count new-generation)) ;; When the count of new-gen is less than the max pop.
               (if (simple-ga.utils/coin-toss? probability )
                 ;; If true...
                 (let [crossover-genome (crossover (:genome (rand-nth parents)) (:genome (rand-nth parents)) )]
                   ;; (apply crossover (take 2 (shuffle parents)) )
-                  (recur (concat new-generation (mutate-genome crossover-genome rate))))
+                  (recur (concat new-generation (vector (mutate-genome crossover-genome rate)) )))
                 ;; If false...
                 (let [single-genome (:genome (rand-nth parents)) ]
-                  (recur (concat new-generation (mutate-genome single-genome rate))))
+                  (recur (concat new-generation (vector (mutate-genome single-genome rate)) )))
                 )
               )
             ))))
