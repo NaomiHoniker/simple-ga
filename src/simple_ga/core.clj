@@ -4,7 +4,8 @@
 
    Champlain College
    CSI-380 Spring 2019"
-  (:gen-class))
+  (:gen-class)
+  (:import (java.util Vector)))
 
 (require '[simple-ga.utils :as utils])
 (require '[simple-ga.fitness-functions :as ff])
@@ -53,17 +54,17 @@
         )
       )
   )
-          
-(defn reproduce
+
+  (defn reproduce
     "Create the next generation from the given parents using the relevant params.
-    
-    
+
+
     The new generation contains a total of (:population-size params) individuals
     including the unmodified parents (this is known as elitism).
-    
+
     The remainder of the individuals are generated as follows:
         with probability (:crossover-rate params) two parents are chosen at random
-        and crossed over and the resulting genome is mutated with mutation rate 
+        and crossed over and the resulting genome is mutated with mutation rate
         (:mutation-rate params)
            otherwise
         with probability (- 1 (:crossover-rate params)) a single parent is chosen
@@ -74,20 +75,39 @@
     (let [population (:population-size params)]
       (let [probability (:crossover-rate params)]
         (let [rate (:mutation-rate params)]
-          (loop [new-generation (map (fn [parent] (:genome parent)) parents)] ;; loop
-            (when (> population (count new-generation)) ;; When the count of new-gen is less than the max pop.
-              (if (simple-ga.utils/coin-toss? probability )
-                ;; If true...
-                (let [crossover-genome (crossover (:genome (rand-nth parents)) (:genome (rand-nth parents)) )]
-                  ;; (apply crossover (take 2 (shuffle parents)) )
-                  (recur (concat new-generation (vector (mutate-genome crossover-genome rate)) )))
-                ;; If false...
-                (let [single-genome (:genome (rand-nth parents)) ]
-                  (recur (concat new-generation (vector (mutate-genome single-genome rate)) )))
+          (let [parent-pool (map (fn [parent] (:genome parent)) parents)]
+            (loop [the-parents parents]                 ;; Loop, using the parents sequence.
+              (when (> population (count the-parents))       (println parents) ;; While expected pop > actual...
+                (if (simple-ga.utils/coin-toss? probability) ;; Flip a coin.
+                  ;; Heads, cross over two random individuals from the parent pool, then create a map of the new genome
+                  (let [crossover-genome (crossover (rand-nth parent-pool) (rand-nth parent-pool))]
+                    (recur (concat the-parents (vector (assoc nil :genome (mutate-genome crossover-genome rate))))
+                           ))
+                  ;; Tails, mutate a random genome from the parent pool. Create and add a map of the new genome.
+                  (let [single-genome (rand-nth parent-pool)]
+                    (recur (concat the-parents (vector (assoc nil :genome (mutate-genome single-genome rate))))
+                           ))
+                  )
                 )
               )
-            ))))
+            )
+          )
+        )
+      )
     )
+
+  ;; Here's code that creates a sequence of *just* the genomes themselves
+  ;;(loop [new-generation (map (fn [parent] (:genome parent)) parents)] ;; loop
+  ;            (when (> population (count new-generation))  (println parents) ;; When the count of new-gen is less than the max pop.
+  ;              (if (simple-ga.utils/coin-toss? probability )
+  ;                ;; If true...
+  ;                (let [crossover-genome (crossover (:genome (rand-nth parents)) (:genome (rand-nth parents)) )]
+  ;                  (recur (concat new-generation (vector (mutate-genome crossover-genome rate)) )))
+  ;                ;; If false...
+  ;                (let [single-genome (:genome (rand-nth parents)) ]
+  ;                  (recur (concat new-generation (vector (mutate-genome single-genome rate)) )))
+  ;                ))
+  ;            )
               
 
 (defn generate-individual
